@@ -1,8 +1,10 @@
 import math as m
 import random as r
+import numpy as np
 from simple_geometry import *
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
+
 
 class Car():
     def __init__(self) -> None:
@@ -299,51 +301,84 @@ class Playground():
         else:
             return self.state
 
-    def draw_background(self, ax):
-        for line in self.lines:
-            ax.plot([line.p1.x, line.p2.x], [line.p1.y, line.p2.y], "k-")
-        # 終點線
-        ax.plot([self.destination_line.p1.x, self.destination_line.p2.x],
-                 [self.destination_line.p1.y, self.destination_line.p2.y], "r-")
-        # 起跑線
-        ax.plot([self.decorate_lines[0].p1.x, self.decorate_lines[0].p2.x],
-                 [self.decorate_lines[0].p1.y, self.decorate_lines[0].p2.y], "r-")
 
-        ax.axis('equal')
+class Animation():
+    """
+        一個用於在Playground中繪製動畫的類。
 
-class animation():
-    def __init__(self, playground: Playground):
-        self.center_point = playground.car.getPosition("center")
-        self.background = playground.lines
-        self.star_line = playground.decorate_lines[0]
-        self.end_line = playground.destination_line
+        Parameters:
+        p (Playground): Playground對象,包含了動畫所需的所有信息。
+
+        Attributes:
+        background (list): Playground中的邊界線。
+        star_line (Line): Playground中的起跑線。
+        end_line (Line): Playground中的終點線。
+        car_trail (list): 車子的移動軌跡。
+        car_radius(int): 車子的半徑
+        fig (Figure): 繪圖板的Figure對象。
+        ax (Axes): 繪圖板的Axes對象。
+        p (Playground): playground 的共同呼叫區域
+        ani (Animation): 動畫的FuncAnimation對象。
+        state (dict): Playground的當前狀態。
+        """
+
+    def __init__(self, p: Playground):
+        self.background = p.lines
+        self.star_line = p.decorate_lines[0]
+        self.end_line = p.destination_line
+        self.car_trail = []
+        self.car_radius = p.car.radius
+        self.fig, self.ax = plt.subplots(figsize=(5, 5))
+        self.p = p
+        self.car = None
+
+        self.draw_background()
+        self.state = p.reset()
+        self.ani = FuncAnimation(self.fig, self.update, frames=np.arange(100), blit=False)
+
+    def draw_background(self):
+        """繪製Playground的背景元素。"""
+        for line in self.background:
+            self.ax.plot([line.p1.x, line.p2.x], [line.p1.y, line.p2.y], "k-")
+        self.ax.plot([self.end_line.p1.x, self.end_line.p2.x],
+                     [self.end_line.p1.y, self.end_line.p2.y], "r-")
+        self.ax.plot([self.star_line.p1.x, self.star_line.p2.x],
+                     [self.star_line.p1.y, self.star_line.p2.y], "r-")
+        self.ax.axis('equal')
+
+    def update(self, frame):
+        """更新動畫的每一幀。"""
+        if not self.p.done:
+            car_pos = self.p.car.getPosition("center")
+            self.car_trail.append(car_pos)
+            self.draw_car(car_pos)
+
+            action = self.p.predictAction(self.state)
+            self.state = self.p.step(action)
+
+        else:
+            self.ani.event_source.stop()
+            print("Game over")
+            # exit()
+
+    def draw_car(self, car_pos):
+        """繪製車子。"""
+        self.car = plt.Circle((car_pos.x, car_pos.y), self.car_radius,
+                              color="red", fill=False)
+        self.ax.add_patch(self.car)
 
 
+    def show_animation(self):
+        """顯示動畫。"""
+        plt.show()
 
 
 def run_example():
     # use example, select random actions until gameover
     p = Playground()
-    state = p.reset()
 
-    fig, ax = plt.subplots(figsize=(5, 5))
-
-    p.draw_background(ax)
-
-    ani = FuncAnimation(fig, func=animation, frames=20, interval=1, blit=True)
-
-
-
-    # while not p.done:
-    #     # print every state and position of the car
-    #     print(state, p.car.getPosition('center'))
-    #     # select action randomly
-    #     # you can predict your action according to the state here
-    #     action = p.predictAction(state)
-    #     # take action
-    #     state = p.step(action)
-    plt.show()
-
+    animation = Animation(p)
+    animation.show_animation()
 
 
 
