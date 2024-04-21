@@ -45,9 +45,9 @@ $$Q(s(n+1), a(n+1)) \leftarrow Q(s(n), a(n)) + \alpha[r(n+1) + \gamma \max \limi
 
 ## 模糊函數
 
-$$ \begin{cases} 2 \leq  \text{right} - \text {left} , & \text {右寬} \\ -2 \leq \text{right} - \text {left} \leq 2, & \text{中間}  \\  -2 \leq  \text{right} - \text {left}, & \text{左寬}\end{cases}$$
+$$ \begin{cases} 2 \leq  \text{right} - \text {left} , & \text {右寬}, \\ -2 \leq \text{right} - \text {left} \leq 2, & \text{中間},  \\  -2 \leq  \text{right} - \text {left}, & \text{左寬}\end{cases}$$
 
-$$ \begin{cases} 7 \lt  \text{right} - \text {left} , & \text {遠} \\ \text {front distance} \leq 7, & \text{近} \end{cases}$$
+$$ \begin{cases} 7 \lt  \text{right} - \text {left} , & \text {遠}, \\ \text {front distance} \leq 7, & \text{近} \end{cases}$$
 
 ## 注意事項
 
