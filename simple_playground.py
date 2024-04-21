@@ -5,6 +5,7 @@ import numpy as np
 from simple_geometry import *
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
+import matplotlib
 
 
 class Car():
@@ -316,16 +317,16 @@ class Playground():
         rl_dif = r_dis-l_dist
 
         q_state = ""
-        if f_dis <= 7:
+        if f_dis <= 8:
             q_state += "close_"
         else:
             q_state += "far_"
 
-        if rl_dif > 2.0:
+        if rl_dif > 2.5:
             q_state += "right"
-        elif -2.0 <= rl_dif <= 2.0:
+        elif -2.5 <= rl_dif <= 2.5:
             q_state += "center"
-        elif rl_dif < -2.0:
+        elif rl_dif < -2.5:
             q_state += "left"
 
         return q_state
@@ -340,7 +341,7 @@ class Playground():
                 return -7
         if q_state == "close_right":
             if 40 >= angle > 20:
-                return 4
+                return 5
             elif 20 >= angle > 0:
                 return 2
             else:
@@ -468,10 +469,13 @@ class Animation():
 
         # 預先訓練自走車的table
         self.p.q_learning_training(1000, 0.8)
-        self.state = p.reset()
+        self.state = None
 
         self.draw_background()
-        self.ani = FuncAnimation(self.fig, self.update, frames=np.arange(100), blit=False)
+        self.ani = FuncAnimation(self.fig, self.update, init_func=self.ini_func, frames=np.arange(10000), blit=False, repeat=True)
+
+    def ini_func(self):
+        self.p.reset()
 
     # 繪製Playground的背景元素
     def draw_background(self):
@@ -499,24 +503,19 @@ class Animation():
             if self.p.complete:
                 self.ani.event_source.stop()
                 print("Mission Complete")
+
             else:
-                print("Game over")
-                print(self.p.q_table)
-                exit()
+                self.state = self.p.reset()
 
         # actual running model(e是e-greedy用的機率，此處為1，代表完全依據e table中最大的值來執行)
-        self.p.run(1, self.p.state)
-
-
+        self.p.run(0.9, self.p.state)
 
     # 繪製車子
     def draw_car(self, car_pos):
-        self.car = plt.Circle((car_pos.x, car_pos.y), self.car_radius,
-                              color="red", fill=False)
+        self.car = plt.Circle((car_pos.x, car_pos.y), self.car_radius, color="red", fill=False)
         self.ax.add_patch(self.car)
         front_censor = self.p.car.getPosition("front")
         self.line.set_data([car_pos.x, front_censor.x], [car_pos.y, front_censor.y])
-
 
     # 顯示動畫
     def show_animation(self):

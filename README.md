@@ -45,9 +45,9 @@ $$Q(s(n+1), a(n+1)) \leftarrow Q(s(n), a(n)) + \alpha[r(n+1) + \gamma \max \limi
 
 ## 模糊函數
 
-$$ \begin{cases} 2 \leq  \text{right} - \text {left} , & \text {右寬}, \\ -2 \leq \text{right} - \text {left} \leq 2, & \text{中間},  \\  -2 \leq  \text{right} - \text {left}, & \text{左寬}\end{cases}$$
+$$ \begin{cases} 2.5 \leq  \text{right} - \text {left} , & \text {右寬}, \\ -2.5 \leq \text{right} - \text {left} \leq 2.5, & \text{中間},  \\  -2.5 \leq  \text{right} - \text {left}, & \text{左寬}\end{cases}$$
 
-$$ \begin{cases} 7 \lt  \text{right} - \text {left} , & \text {遠}, \\ \text {front distance} \leq 7, & \text{近} \end{cases}$$
+$$ \begin{cases} 8 \lt  \text{right} - \text {left} , & \text {遠}, \\ \text {front distance} \leq 8, & \text{近} \end{cases}$$
 
 ## 注意事項
 
@@ -64,6 +64,14 @@ $$ \begin{cases} 7 \lt  \text{right} - \text {left} , & \text {遠}, \\ \text {f
 
 酷酷的成功圖片
 
-![執行圖片](./success_fig.png)
+![執行圖片](./photo/success_fig.png)
 
 但不得不說，其實結果還蠻抖的，所以也純屬僥倖
+<br/>
+<br/>
+
+\*小更新
+
+![執行圖片](./photo/success_fig_1.png)
+
+調整參數後，稍微跑了一下就可以到達終點了，所以參數還是挺重要的
