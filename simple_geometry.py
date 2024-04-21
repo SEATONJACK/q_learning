@@ -96,7 +96,7 @@ class Line2D():
     def __str__(self) -> str:
         return f'{self.p1} {self.p2}'
 
-    # find angle be between two lines
+    # find angle between two lines
     def angleToLine(self, line: Line2D):
         p1, p2 = line.p1, line.p2
         p3, p4 = self.p1, self.p2
