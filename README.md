@@ -2,6 +2,8 @@
 
 開啟`executable file`中的`simple_playground.exe`
 
+![成功畫面](./photo/exefile.png)
+
 執行之後，出現下圖
 
 ![初始畫面](./photo/starting_scene.png)
