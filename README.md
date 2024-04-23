@@ -1,5 +1,7 @@
 # 操作方法
 
+開啟`executable file`中的`simple_playground.exe`
+
 執行之後，出現下圖
 
 ![初始畫面](./photo/starting_scene.png)
