@@ -1,3 +1,24 @@
+# 操作方法
+
+執行之後，出現下圖
+
+![初始畫面](./photo/starting_scene.png)
+
+點擊開始動畫後，就會自動訓練完畢後進行動畫
+
+<br/>
+
+以下是成功畫面
+
+![成功畫面](./photo/success_scene.png)
+
+<br/>
+
+以下是失敗畫面
+
+![成功畫面](./photo/failure_scene.png)
+
+
 # 採用規則
 
 ## 更新函數
@@ -47,7 +68,7 @@ $$Q(s(n+1), a(n+1)) \leftarrow Q(s(n), a(n)) + \alpha[r(n+1) + \gamma \max \limi
 
 $$ \begin{cases} 2.5 \leq  \text{right} - \text {left} , & \text {右寬}, \\ -2.5 \leq \text{right} - \text {left} \leq 2.5, & \text{中間},  \\  -2.5 \leq  \text{right} - \text {left}, & \text{左寬}\end{cases}$$
 
-$$ \begin{cases} 8 \lt  \text{right} - \text {left} , & \text {遠}, \\ \text {front distance} \leq 8, & \text{近} \end{cases}$$
+$$ \begin{cases} 8 \lt  \text{front distance} , & \text {遠}, \\ 0 \leq \text {front distance} \leq 8, & \text{近} \end{cases}$$
 
 ## 注意事項
 
@@ -64,7 +85,7 @@ $$ \begin{cases} 8 \lt  \text{right} - \text {left} , & \text {遠}, \\ \text {f
 
 酷酷的成功圖片
 
-![執行圖片](./photo/success_fig.png)
+![執行圖片](./photo/test1.png)
 
 但不得不說，其實結果還蠻抖的，所以也純屬僥倖
 <br/>
@@ -72,6 +93,6 @@ $$ \begin{cases} 8 \lt  \text{right} - \text {left} , & \text {遠}, \\ \text {f
 
 \*小更新
 
-![執行圖片](./photo/success_fig_1.png)
+![執行圖片](./photo/test2.png)
 
 調整參數後，稍微跑了一下就可以到達終點了，所以參數還是挺重要的

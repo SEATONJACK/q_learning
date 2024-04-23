@@ -1,11 +1,12 @@
-import math as m
-import random
 import random as r
-import numpy as np
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from simple_geometry import *
 import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation
 import matplotlib
+from PyQt5 import QtWidgets, QtCore
+from matplotlib.figure import Figure
+
+matplotlib.use('Qt5Agg')
 
 
 class Car():
@@ -114,7 +115,7 @@ class Playground():
         self.reset()
 
     def _setDefaultLine(self):
-        print('use default lines')
+        # print('use default lines')
         # default lines
         self.destination_line = Line2D(18, 40, 30, 37)
 
@@ -396,16 +397,16 @@ class Playground():
 
     # e-greedy algorithm
     def e_greedy(self, e, q_state):
-        if random.random() <= e:
+        if r.random() <= e:
             return self.index_to_angle(self.pick_max_index(q_state))
         else:
-            return self.index_to_angle(random.choice([i for i in range(len(self.q_table[q_state]))]))
+            return self.index_to_angle(r.choice([i for i in range(len(self.q_table[q_state]))]))
 
     # pick the index with the highest score
     def pick_max_index(self, q_state):
         max_value = max(self.q_table[q_state])
         max_indices = [i for i, v in enumerate(self.q_table[q_state]) if v == max_value]
-        return random.choice(max_indices)
+        return r.choice(max_indices)
 
     # training model
     def q_learning_training(self, training_time, e):
@@ -434,105 +435,152 @@ class Playground():
         self.update_q_table(self.current_state, self.current_angle,
                             self.previous_state, self.previous_angle)
 
-# 動畫顯示
-class Animation():
-    """
-        一個用於在Playground中繪製動畫的類。
 
-        Parameters:
-        p (Playground): Playground對象,包含了動畫所需的所有信息。
 
-        Attributes:
-        background (list): Playground中的邊界線。
-        star_line (Line): Playground中的起跑線。
-        end_line (Line): Playground中的終點線。
-        car_trail (list): 車子的移動軌跡。
-        car_radius(int): 車子的半徑
-        fig (Figure): 繪圖板的Figure對象。
-        ax (Axes): 繪圖板的Axes對象。
-        p (Playground): playground 的共同呼叫區域
-        ani (Animation): 動畫的FuncAnimation對象。
-        state (dict): Playground的當前狀態。
-        """
-
+class AnimationGUI(QtWidgets.QMainWindow):
+    '''
+    p: playground的建立
+    state: 當前狀態
+    ani_running: 當下程式是否在執行
+    QtCore.QTimer: 控制動畫的執行頻率和狀態
+    '''
     def __init__(self, p: Playground):
-        self.background = p.lines
-        self.star_line = p.decorate_lines[0]
-        self.end_line = p.destination_line
-        self.car_trail = []
-        self.car_radius = p.car.radius
-        self.fig, self.ax = plt.subplots(figsize=(5, 5))
+        super().__init__()
         self.p = p
-        self.car = None
-        self.line, = self.ax.plot([], [], 'r-')  # 建立圓心到前感測器的直線
-        self.text = self.ax.text(15, 0, '', fontsize=12)
+        self.state = self.p.reset()
+        self.ani_running = False
+        self.timer = QtCore.QTimer(self)
 
-        # 預先訓練自走車的table
-        self.p.q_learning_training(1000, 0.8)
-        self.state = None
+        # 建立主視窗
+        self.setWindowTitle("操作介面")
+        self.main_widget = QtWidgets.QWidget(self)
+        # 將主視窗的中間介面設為main_widget
+        self.setCentralWidget(self.main_widget)
+
+        # 建立開始按鈕
+        self.start_button = QtWidgets.QPushButton("開始動畫")
+        self.start_button.clicked.connect(self.start_animation)
+
+        # 建立繪畫動畫的區域
+        # 動畫的底板
+        self.figure = Figure(figsize=(5, 5))
+        self.canvas = FigureCanvas(self.figure)
+
+        # 建立畫面配置
+        # 主要畫面
+        layout = QtWidgets.QVBoxLayout(self.main_widget)
+        layout.addWidget(self.start_button)
+        layout.addWidget(self.canvas)
+
+        # 事前的背景及變數設定
+        self.setup_animation()
+
+    def setup_animation(self):
+        '''
+        ax: 動畫的畫布
+        background: 動畫背景
+        star_line: 起點
+        end_line: 終點
+        car_trail: 車子的移動軌跡
+        line: 顯示車子當前方向的直線
+        text: 當下感測器所偵測到的距離
+        '''
+
+        self.ax = self.figure.add_subplot(111)
+        self.background = self.p.lines
+        self.star_line = self.p.decorate_lines[0]
+        self.end_line = self.p.destination_line
+        self.car_trail = []
+        self.car_radius = self.p.car.radius
+        self.line, = self.ax.plot([], [], 'r-')  # 建立圓心到前感測器的直線
+        self.text = self.ax.text(15, 0, '', fontsize=10)
 
         self.draw_background()
-        self.ani = FuncAnimation(self.fig, self.update, init_func=self.ini_func, frames=np.arange(10000), blit=False, repeat=True)
 
-    def ini_func(self):
-        self.p.reset()
-
-    # 繪製Playground的背景元素
     def draw_background(self):
         for line in self.background:
             self.ax.plot([line.p1.x, line.p2.x], [line.p1.y, line.p2.y], "k-")
+
+        # 因為終點是一個矩形，所以需要兩條線
         self.ax.plot([self.end_line.p1.x, self.end_line.p2.x],
                      [self.end_line.p1.y, self.end_line.p1.y], "r-")
         self.ax.plot([self.end_line.p1.x, self.end_line.p2.x],
                      [self.end_line.p2.y, self.end_line.p2.y], "r-")
+
+        # 起點
         self.ax.plot([self.star_line.p1.x, self.star_line.p2.x],
                      [self.star_line.p1.y, self.star_line.p2.y], "b-")
+
         self.ax.axis('equal')
 
-    # 更新動畫的每一幀
-    def update(self, frame):
-        car_pos = self.p.car.getPosition("center")
-        self.car_trail.append(car_pos)
-        self.draw_car(car_pos)
-        # 更新文本内容
-        self.text.set_text(f'front censor: {self.p.state[0]:.{3}f}\n'
-                           f'right censor: {self.p.state[1]:.{3}f}\n'
-                           f'left censor: {self.p.state[2]:.{3}f}')
+    # 初始化各項變數後開始動畫
+    def start_animation(self):
+        if self.ani_running:
+            self.timer.stop()
 
+        self.clear_car()
+        self.p.reset()
+        self.ani_running = True
+
+        # 更新動畫的函數
+        self.timer.timeout.connect(self.update_animation)
+        self.timer.start(50)  # 每 50 毫秒更新一次
+
+    # 更新動畫的畫面
+    def update_animation(self):
+        car_pos = self.p.car.getPosition("center")
+        self.draw_car(car_pos)
+        self.text.set_text(
+            f'front censor: {self.p.state[0]:.{3}f}\n'
+            f'right censor: {self.p.state[1]:.{3}f}\n'
+            f'left censor: {self.p.state[2]:.{3}f}'
+        )
+
+        # 如果撞牆的話就算失敗
+        # 抵達終點的話就算成功
         if self.p.done:
             if self.p.complete:
-                self.ani.event_source.stop()
-                print("Mission Complete")
-
+                self.show_message("Succeeded!")
             else:
-                self.state = self.p.reset()
+                self.show_message("Failed!")
+            self.timer.stop()
+            self.ani_running = False
 
-        # actual running model(e是e-greedy用的機率，此處為1，代表完全依據e table中最大的值來執行)
         self.p.run(0.9, self.p.state)
 
-    # 繪製車子
+        # 畫出所有移動畫面
+        self.canvas.draw()
+
+    # 畫出車子
     def draw_car(self, car_pos):
         self.car = plt.Circle((car_pos.x, car_pos.y), self.car_radius, color="red", fill=False)
         self.ax.add_patch(self.car)
+        self.car_trail.append(self.car)
         front_censor = self.p.car.getPosition("front")
         self.line.set_data([car_pos.x, front_censor.x], [car_pos.y, front_censor.y])
 
-    # 顯示動畫
-    def show_animation(self):
-        plt.show()
+    # 再次開始的時候，清理之前的車子移動軌跡
+    def clear_car(self):
+        for trace in self.ax.patches:
+            trace.remove()
+        self.car_trail = []
 
+    # 成功、失敗訊息
+    def show_message(self, message):
+        msg_box = QtWidgets.QMessageBox()
+        msg_box.setText(message)
+        msg_box.exec_()
 
+    # 實際顯示整個動畫
+    def run(self):
+        self.show()
 
+if __name__ == '__main__':
+    app = QtWidgets.QApplication([])
+    gui = AnimationGUI(Playground())
+    gui.run()
+    # 啟動 PyQt5 應用程式的事件循環。事件循環是一個無限循環,它會接收並處理來自作業系統的事件，
+    # 例如鍵盤輸入、滑鼠移動等。只要應用程式沒有被關閉,事件循環就會一直運行。exec_() 方法會阻
+    # 塞主線程,直到應用程式退出為止。
+    app.exec_()
 
-
-def run_example():
-    # use example, select random actions until gameover
-    p = Playground()
-
-    animation = Animation(p)
-    animation.show_animation()
-
-
-
-if __name__ == "__main__":
-    run_example()
